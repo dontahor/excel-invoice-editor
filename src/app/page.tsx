@@ -213,23 +213,40 @@ export default function ExcelEditor() {
                       onChange={(update) => {
                         const [newStart, newEnd] = update;
 
-                        // User request: If we have a range and change the start date (and it's before end date),
-                        // preserve the end date instead of resetting it.
-                        if (newStart && !newEnd && startDate && endDate && newStart < endDate) {
-                          setDateRange([newStart, endDate]);
-                          setData({
-                            ...data,
-                            dateRange: `${formatDate(newStart)} - ${formatDate(endDate)}`
-                          });
-                        } else {
-                          // Standard behavior
-                          setDateRange(update);
-                          if (newStart && newEnd) {
+                        // Smart Range Logic:
+                        // If we already have a full range selected, treat the new click 
+                        // as an update to the closest boundary (start or end) 
+                        // rather than starting a completely new range.
+                        if (newStart && !newEnd && startDate && endDate) {
+                          const distStart = Math.abs(newStart.getTime() - startDate.getTime());
+                          const distEnd = Math.abs(newStart.getTime() - endDate.getTime());
+
+                          // Update End Date if closer (or extending right)
+                          if (distEnd < distStart) {
+                            setDateRange([startDate, newStart]);
                             setData({
                               ...data,
-                              dateRange: `${formatDate(newStart)} - ${formatDate(newEnd)}`
+                              dateRange: `${formatDate(startDate)} - ${formatDate(newStart)}`
                             });
+                            return;
+                          } else {
+                            // Update Start Date if closer (or extending left)
+                            setDateRange([newStart, endDate]);
+                            setData({
+                              ...data,
+                              dateRange: `${formatDate(newStart)} - ${formatDate(endDate)}`
+                            });
+                            return;
                           }
+                        }
+
+                        // Standard behavior for initial selection or clearing
+                        setDateRange(update);
+                        if (newStart && newEnd) {
+                          setData({
+                            ...data,
+                            dateRange: `${formatDate(newStart)} - ${formatDate(newEnd)}`
+                          });
                         }
                       }}
                       value={startDate ? `${formatDate(startDate)}${endDate ? ` - ${formatDate(endDate)}` : ' - '}` : ''}
