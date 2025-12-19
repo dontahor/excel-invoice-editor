@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, Download, FileText, Calendar, Hash, CheckCircle2, ArrowRight, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DatePicker from 'react-datepicker';
@@ -11,6 +11,26 @@ export default function ExcelEditor() {
   const [data, setData] = useState<ExcelData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // Date Range State
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
+  const [startDate, endDate] = dateRange;
+
+  // Update local date range state when data changes
+  useEffect(() => {
+    if (data?.dateRange) {
+      const parts = data.dateRange.split(' - ');
+      if (parts.length === 2) {
+        const parseDate = (d: string) => {
+          const [day, month, year] = d.split('/').map(Number);
+          // Check if valid date
+          if (!day || !month || !year) return null;
+          return new Date(year, month - 1, day);
+        };
+        setDateRange([parseDate(parts[0]), parseDate(parts[1])]);
+      }
+    }
+  }, [data?.dateRange]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = e.target.files?.[0];
@@ -60,11 +80,19 @@ export default function ExcelEditor() {
     }
   };
 
-  // Helper to safely parse date string to Date object
+  // Helper to safely parse date string to Date object for single date
   const getDateObject = (dateStr: string) => {
     if (!dateStr) return new Date();
     const date = new Date(dateStr);
     return isNaN(date.getTime()) ? new Date() : date;
+  };
+
+  // Helper to format date for display/storage
+  const formatDate = (date: Date) => {
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const y = date.getFullYear();
+    return `${d}/${m}/${y}`;
   };
 
   return (
@@ -116,22 +144,27 @@ export default function ExcelEditor() {
               key="editor"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="glass-card space-y-8"
+              className="glass-card space-y-8 relative"
             >
+              {/* Close Button */}
+              <button
+                onClick={() => setData(null)}
+                className="absolute -top-4 -right-4 p-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-full border border-red-500/20 hover:border-red-500 transition-all shadow-lg backdrop-blur-md z-10"
+                title="Close and upload new file"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
               <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/10">
                 <div className="flex items-center gap-3 overflow-hidden">
                   <div className="p-2 rounded-lg bg-indigo-500/20 flex-shrink-0">
                     <CheckCircle2 className="w-5 h-5 text-indigo-500" />
                   </div>
-                  <span className="font-medium text-slate-300 truncate">{file?.name}</span>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Editing File</span>
+                    <span className="font-medium text-slate-200 truncate text-lg">{file?.name}</span>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setData(null)}
-                  className="p-2 hover:bg-white/5 rounded-lg transition-colors text-slate-400 hover:text-white"
-                  title="Close and upload new file"
-                >
-                  <X className="w-5 h-5" />
-                </button>
               </div>
 
               <div className="space-y-6">
@@ -172,20 +205,36 @@ export default function ExcelEditor() {
                   <label className="input-label flex items-center gap-2">
                     <ArrowRight className="w-4 h-4 text-indigo-400" /> Date Range
                   </label>
-                  <input
-                    type="text"
-                    value={data.dateRange}
-                    onChange={(e) => setData({ ...data, dateRange: e.target.value })}
-                    className="input-field"
-                    placeholder="DD/MM/YYYY - DD/MM/YYYY"
-                  />
+                  <div className="relative">
+                    <DatePicker
+                      selectsRange={true}
+                      startDate={startDate}
+                      endDate={endDate}
+                      onChange={(update) => {
+                        setDateRange(update);
+                        const [start, end] = update;
+                        if (start && end) {
+                          setData({
+                            ...data,
+                            dateRange: `${formatDate(start)} - ${formatDate(end)}`
+                          });
+                        }
+                      }}
+                      dateFormat="dd/MM/yyyy"
+                      className="input-field w-full"
+                      wrapperClassName="w-full"
+                      placeholderText="Select start and end date"
+                      showPopperArrow={false}
+                      isClearable={true}
+                    />
+                  </div>
                 </div>
               </div>
 
               <button
                 onClick={handleDownload}
                 disabled={isProcessing}
-                className="btn btn-primary w-full py-4 text-lg mt-4"
+                className="btn btn-primary w-full py-4 text-lg mt-4 shadow-xl shadow-indigo-500/20"
               >
                 {isProcessing ? (
                   <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -206,7 +255,7 @@ export default function ExcelEditor() {
         </AnimatePresence>
       </motion.div>
 
-      <footer className="mt-12 text-center text-slate-600 text-sm">
+      <footer className="mt-12 text-center text-slate-600 text-sm pb-8">
         <p>Built with Next.js & ExcelJS</p>
       </footer>
     </main>
