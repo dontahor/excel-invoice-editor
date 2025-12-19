@@ -165,6 +165,11 @@ body {
   font-family: 'Outfit', sans-serif !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
   padding: 1rem !important;
+  z-index: 9999 !important;
+}
+
+.react-datepicker-popper {
+  z-index: 9999 !important;
 }
 
 .react-datepicker__header {

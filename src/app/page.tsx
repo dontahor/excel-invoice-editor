@@ -168,7 +168,7 @@ export default function ExcelEditor() {
               </div>
 
               <div className="space-y-6">
-                <div className="input-group">
+                <div className="input-group relative z-30">
                   <label className="input-label flex items-center gap-2">
                     <Hash className="w-4 h-4 text-indigo-400" /> Invoice Number
                   </label>
@@ -181,7 +181,7 @@ export default function ExcelEditor() {
                   />
                 </div>
 
-                <div className="input-group">
+                <div className="input-group relative z-20">
                   <label className="input-label flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-indigo-400" /> Invoice Date
                   </label>
@@ -201,7 +201,7 @@ export default function ExcelEditor() {
                   </div>
                 </div>
 
-                <div className="input-group">
+                <div className="input-group relative z-10">
                   <label className="input-label flex items-center gap-2">
                     <ArrowRight className="w-4 h-4 text-indigo-400" /> Date Range
                   </label>
@@ -234,7 +234,7 @@ export default function ExcelEditor() {
               <button
                 onClick={handleDownload}
                 disabled={isProcessing}
-                className="btn btn-primary w-full py-4 text-lg mt-4 shadow-xl shadow-indigo-500/20"
+                className="btn btn-primary w-full py-4 text-lg mt-4 shadow-xl shadow-indigo-500/20 relative z-0"
               >
                 {isProcessing ? (
                   <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
