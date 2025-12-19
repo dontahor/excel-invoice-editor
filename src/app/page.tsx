@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
-import { Upload, Download, FileText, Calendar, Hash, CheckCircle2, ArrowRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Upload, Download, FileText, Calendar, Hash, CheckCircle2, ArrowRight, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import DatePicker from 'react-datepicker';
 import { parseExcel, generateExcel, ExcelData } from '@/lib/excel';
 
 export default function ExcelEditor() {
@@ -59,14 +60,21 @@ export default function ExcelEditor() {
     }
   };
 
+  // Helper to safely parse date string to Date object
+  const getDateObject = (dateStr: string) => {
+    if (!dateStr) return new Date();
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? new Date() : date;
+  };
+
   return (
-    <main className="min-h-screen p-8 md:p-24 flex flex-col items-center justify-center relative">
+    <main className="container">
       <div className="bg-gradient" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl w-full"
+        className="w-full max-w-2xl mx-auto"
       >
         <header className="text-center mb-12">
           <motion.div
@@ -75,8 +83,8 @@ export default function ExcelEditor() {
           >
             <FileText className="w-12 h-12 text-indigo-500" />
           </motion.div>
-          <h1 className="text-5xl font-bold mb-4 tracking-tight">Invoice Editor</h1>
-          <p className="text-slate-400 text-lg">Upload your invoice, edit the details, and download the new version instantly.</p>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Invoice Editor</h1>
+          <p className="text-slate-400 text-lg">Upload, edit, and download instantly.</p>
         </header>
 
         <AnimatePresence mode="wait">
@@ -95,7 +103,7 @@ export default function ExcelEditor() {
                 className="sr-only"
                 id="file-upload"
               />
-              <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center">
+              <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center w-full h-full">
                 <div className="p-6 rounded-full bg-white/5 mb-6 group-hover:bg-indigo-500/20 transition-colors">
                   <Upload className="w-10 h-10 text-slate-400" />
                 </div>
@@ -110,57 +118,66 @@ export default function ExcelEditor() {
               animate={{ opacity: 1, x: 0 }}
               className="glass-card space-y-8"
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-indigo-500/20">
+              <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/10">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="p-2 rounded-lg bg-indigo-500/20 flex-shrink-0">
                     <CheckCircle2 className="w-5 h-5 text-indigo-500" />
                   </div>
-                  <span className="font-medium text-slate-300">{file?.name}</span>
+                  <span className="font-medium text-slate-300 truncate">{file?.name}</span>
                 </div>
                 <button
                   onClick={() => setData(null)}
-                  className="text-sm text-slate-500 hover:text-white transition-colors"
+                  className="p-2 hover:bg-white/5 rounded-lg transition-colors text-slate-400 hover:text-white"
+                  title="Close and upload new file"
                 >
-                  Change File
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="grid gap-6">
+              <div className="space-y-6">
                 <div className="input-group">
                   <label className="input-label flex items-center gap-2">
-                    <Hash className="w-4 h-4" /> Invoice Number
+                    <Hash className="w-4 h-4 text-indigo-400" /> Invoice Number
                   </label>
                   <input
                     type="text"
                     value={data.invoiceNumber}
                     onChange={(e) => setData({ ...data, invoiceNumber: e.target.value })}
                     className="input-field"
-                    placeholder="e.target.value"
+                    placeholder="e.g. 38"
                   />
                 </div>
 
                 <div className="input-group">
                   <label className="input-label flex items-center gap-2">
-                    <Calendar className="w-4 h-4" /> Invoice Date
+                    <Calendar className="w-4 h-4 text-indigo-400" /> Invoice Date
                   </label>
-                  <input
-                    type="date"
-                    value={data.invoiceDate}
-                    onChange={(e) => setData({ ...data, invoiceDate: e.target.value })}
-                    className="input-field"
-                  />
+                  <div className="relative">
+                    <DatePicker
+                      selected={getDateObject(data.invoiceDate)}
+                      onChange={(date: Date | null) => {
+                        if (date) {
+                          setData({ ...data, invoiceDate: date.toISOString().split('T')[0] });
+                        }
+                      }}
+                      dateFormat="yyyy-MM-dd"
+                      className="input-field w-full"
+                      wrapperClassName="w-full"
+                      showPopperArrow={false}
+                    />
+                  </div>
                 </div>
 
                 <div className="input-group">
                   <label className="input-label flex items-center gap-2">
-                    <ArrowRight className="w-4 h-4" /> Date Range
+                    <ArrowRight className="w-4 h-4 text-indigo-400" /> Date Range
                   </label>
                   <input
                     type="text"
                     value={data.dateRange}
                     onChange={(e) => setData({ ...data, dateRange: e.target.value })}
                     className="input-field"
-                    placeholder="15/12/2025 - 19/12/2025"
+                    placeholder="DD/MM/YYYY - DD/MM/YYYY"
                   />
                 </div>
               </div>
@@ -168,7 +185,7 @@ export default function ExcelEditor() {
               <button
                 onClick={handleDownload}
                 disabled={isProcessing}
-                className="btn btn-primary w-full py-4 text-lg"
+                className="btn btn-primary w-full py-4 text-lg mt-4"
               >
                 {isProcessing ? (
                   <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -189,8 +206,8 @@ export default function ExcelEditor() {
         </AnimatePresence>
       </motion.div>
 
-      <footer className="mt-12 text-slate-600 text-sm">
-        Built with Next.js & ExcelJS
+      <footer className="mt-12 text-center text-slate-600 text-sm">
+        <p>Built with Next.js & ExcelJS</p>
       </footer>
     </main>
   );
