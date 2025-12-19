@@ -39,17 +39,15 @@ jobs:
           cache-dependency-path: website/package-lock.json
       - name: Install dependencies
         run: npm install
-        working-directory: website
       - name: Build
         run: npm run build
-        working-directory: website
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload entire repository
-          path: './website/out'
+          path: './out'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
