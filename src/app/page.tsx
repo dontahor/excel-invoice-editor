@@ -82,9 +82,9 @@ export default function ExcelEditor() {
 
   // Helper to safely parse date string to Date object for single date
   const getDateObject = (dateStr: string) => {
-    if (!dateStr) return new Date();
+    if (!dateStr) return null;
     const date = new Date(dateStr);
-    return isNaN(date.getTime()) ? new Date() : date;
+    return isNaN(date.getTime()) ? null : date;
   };
 
   // Helper to format date for display/storage
@@ -220,6 +220,7 @@ export default function ExcelEditor() {
                           });
                         }
                       }}
+                      value={startDate ? `${formatDate(startDate)}${endDate ? ` - ${formatDate(endDate)}` : ' - '}` : ''}
                       dateFormat="dd/MM/yyyy"
                       className="input-field w-full"
                       wrapperClassName="w-full"
