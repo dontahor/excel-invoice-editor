@@ -201,62 +201,71 @@ export default function ExcelEditor() {
                   </div>
                 </div>
 
-                <div className="input-group relative z-10">
-                  <label className="input-label flex items-center gap-2">
-                    <ArrowRight className="w-4 h-4 text-indigo-400" /> Date Range
-                  </label>
-                  <div className="relative">
-                    <DatePicker
-                      selectsRange={true}
-                      startDate={startDate}
-                      endDate={endDate}
-                      onChange={(update) => {
-                        const [newStart, newEnd] = update;
-
-                        // Smart Range Logic:
-                        // If we already have a full range selected, treat the new click 
-                        // as an update to the closest boundary (start or end) 
-                        // rather than starting a completely new range.
-                        if (newStart && !newEnd && startDate && endDate) {
-                          const distStart = Math.abs(newStart.getTime() - startDate.getTime());
-                          const distEnd = Math.abs(newStart.getTime() - endDate.getTime());
-
-                          // Update End Date if closer (or extending right)
-                          if (distEnd < distStart) {
-                            setDateRange([startDate, newStart]);
-                            setData({
-                              ...data,
-                              dateRange: `${formatDate(startDate)} - ${formatDate(newStart)}`
-                            });
-                            return;
+                <div className="grid grid-cols-2 gap-4 relative z-10">
+                  <div className="input-group">
+                    <label className="input-label flex items-center gap-2">
+                      <ArrowRight className="w-4 h-4 text-indigo-400" /> Start Date
+                    </label>
+                    <div className="relative">
+                      <DatePicker
+                        selected={startDate}
+                        onChange={(date: Date | null) => {
+                          if (date) {
+                            setDateRange([date, endDate]);
+                            if (endDate) {
+                              setData({
+                                ...data,
+                                dateRange: `${formatDate(date)} - ${formatDate(endDate)}`
+                              });
+                            } else {
+                              setData({
+                                ...data,
+                                dateRange: `${formatDate(date)} - `
+                              });
+                            }
                           } else {
-                            // Update Start Date if closer (or extending left)
-                            setDateRange([newStart, endDate]);
-                            setData({
-                              ...data,
-                              dateRange: `${formatDate(newStart)} - ${formatDate(endDate)}`
-                            });
-                            return;
+                            // handle clear
+                            setDateRange([null, endDate]);
+                            setData({ ...data, dateRange: '' });
                           }
-                        }
+                        }}
+                        dateFormat="dd/MM/yyyy"
+                        className="input-field w-full"
+                        wrapperClassName="w-full"
+                        placeholderText="Start Date"
+                        showPopperArrow={false}
+                      />
+                    </div>
+                  </div>
 
-                        // Standard behavior for initial selection or clearing
-                        setDateRange(update);
-                        if (newStart && newEnd) {
-                          setData({
-                            ...data,
-                            dateRange: `${formatDate(newStart)} - ${formatDate(newEnd)}`
-                          });
-                        }
-                      }}
-                      value={startDate ? `${formatDate(startDate)}${endDate ? ` - ${formatDate(endDate)}` : ' - '}` : ''}
-                      dateFormat="dd/MM/yyyy"
-                      className="input-field w-full"
-                      wrapperClassName="w-full"
-                      placeholderText="Select start and end date"
-                      showPopperArrow={false}
-                      isClearable={true}
-                    />
+                  <div className="input-group">
+                    <label className="input-label flex items-center gap-2">
+                      <ArrowRight className="w-4 h-4 text-indigo-400" /> End Date
+                    </label>
+                    <div className="relative">
+                      <DatePicker
+                        selected={endDate}
+                        onChange={(date: Date | null) => {
+                          if (date) {
+                            setDateRange([startDate, date]);
+                            if (startDate) {
+                              setData({
+                                ...data,
+                                dateRange: `${formatDate(startDate)} - ${formatDate(date)}`
+                              });
+                            }
+                          } else {
+                            setDateRange([startDate, null]);
+                          }
+                        }}
+                        dateFormat="dd/MM/yyyy"
+                        className="input-field w-full"
+                        wrapperClassName="w-full"
+                        placeholderText="End Date"
+                        showPopperArrow={false}
+                        minDate={startDate || undefined}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -283,11 +292,11 @@ export default function ExcelEditor() {
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </motion.div >
 
       <footer className="mt-12 text-center text-slate-600 text-sm pb-8">
         <p>Built with Next.js & ExcelJS</p>
       </footer>
-    </main>
+    </main >
   );
 }
