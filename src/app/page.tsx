@@ -211,13 +211,25 @@ export default function ExcelEditor() {
                       startDate={startDate}
                       endDate={endDate}
                       onChange={(update) => {
-                        setDateRange(update);
-                        const [start, end] = update;
-                        if (start && end) {
+                        const [newStart, newEnd] = update;
+
+                        // User request: If we have a range and change the start date (and it's before end date),
+                        // preserve the end date instead of resetting it.
+                        if (newStart && !newEnd && startDate && endDate && newStart < endDate) {
+                          setDateRange([newStart, endDate]);
                           setData({
                             ...data,
-                            dateRange: `${formatDate(start)} - ${formatDate(end)}`
+                            dateRange: `${formatDate(newStart)} - ${formatDate(endDate)}`
                           });
+                        } else {
+                          // Standard behavior
+                          setDateRange(update);
+                          if (newStart && newEnd) {
+                            setData({
+                              ...data,
+                              dateRange: `${formatDate(newStart)} - ${formatDate(newEnd)}`
+                            });
+                          }
                         }
                       }}
                       value={startDate ? `${formatDate(startDate)}${endDate ? ` - ${formatDate(endDate)}` : ' - '}` : ''}
