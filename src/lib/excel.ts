@@ -35,7 +35,10 @@ export async function generateExcel(
     if (!worksheet) throw new Error("No worksheet found");
 
     worksheet.getCell('B1').value = `Invoice: ${data.invoiceNumber}`;
-    worksheet.getCell('B2').value = data.invoiceDate;
+    const invoiceDate = new Date(data.invoiceDate);
+    const dateCell = worksheet.getCell('B2');
+    dateCell.value = invoiceDate;
+    dateCell.numFmt = 'dd/mm/yyyy';
     worksheet.getCell('B15').value = `Confirmation of hours worked From ${data.dateRange}`;
 
     const buffer = await workbook.xlsx.writeBuffer();

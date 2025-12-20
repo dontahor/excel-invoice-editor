@@ -39,6 +39,22 @@ export default function ExcelEditor() {
     setIsProcessing(true);
     try {
       const parsedData = await parseExcel(uploadedFile);
+
+      // Auto-increment invoice number
+      if (parsedData.invoiceNumber) {
+        // Extract first number found in the string
+        const match = parsedData.invoiceNumber.match(/(\d+)/);
+        if (match) {
+          const num = parseInt(match[1]); // match[1] is the captured group
+          if (!isNaN(num)) {
+            parsedData.invoiceNumber = String(num + 1);
+          }
+        }
+      }
+
+      // Set Invoice Date to Today
+      parsedData.invoiceDate = new Date().toISOString().split('T')[0];
+
       setFile(uploadedFile);
       setData(parsedData);
     } catch (error) {
@@ -63,7 +79,7 @@ export default function ExcelEditor() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const newFileName = file ? file.name.replace(/(\d+)/, (match) => String(parseInt(match) + 1)) : 'updated_invoice.xlsx';
+      const newFileName = file ? file.name.replace(/(\d+)/, (match) => String(parseInt(match) + 1)) : 'updated_payslip.xlsx';
       a.download = newFileName;
       document.body.appendChild(a);
       a.click();
@@ -111,7 +127,7 @@ export default function ExcelEditor() {
           >
             <FileText className="w-12 h-12 text-indigo-500" />
           </motion.div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Invoice Editor</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">PaySlip Editor</h1>
           <p className="text-slate-400 text-lg">Upload, edit, and download instantly.</p>
         </header>
 
@@ -193,7 +209,7 @@ export default function ExcelEditor() {
                           setData({ ...data, invoiceDate: date.toISOString().split('T')[0] });
                         }
                       }}
-                      dateFormat="yyyy-MM-dd"
+                      dateFormat="dd/MM/yyyy"
                       className="input-field w-full"
                       wrapperClassName="w-full"
                       showPopperArrow={false}
@@ -295,7 +311,7 @@ export default function ExcelEditor() {
       </motion.div >
 
       <footer className="mt-12 text-center text-slate-600 text-sm pb-8">
-        <p>Built with Next.js & ExcelJS</p>
+        <p>Built for percey work (v1.0.2)</p>
       </footer>
     </main >
   );
