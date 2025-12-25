@@ -113,7 +113,21 @@ function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = file?.name || "edited_invoice.xlsx";
+    // Smart Filename Logic: wk_38.xlsx -> wk_39.xlsx
+    let downloadName = file?.name || "edited_invoice.xlsx";
+    if (file?.name) {
+      // Regex to find "Prefix" + "Number" + ".xlsx"
+      // e.g., "wk_" + "38" + ".xlsx"
+      const match = file.name.match(/^(.*?)(\d+)(\.xlsx)$/i);
+      if (match) {
+        const prefix = match[1];
+        // match[2] is the old number, ignoring it
+        const ext = match[3];
+        downloadName = `${prefix}${formData.invoiceNumber}${ext}`;
+      }
+    }
+
+    a.download = downloadName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
