@@ -33,7 +33,7 @@ export function FileUpload({ onFileUpload }) {
                 <div className="p-6 rounded-full bg-white/5 mb-6 group-hover:bg-indigo-500/20 transition-colors">
                     <Upload className="w-10 h-10 text-slate-400" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-white">Drop your .xlsx here</h3>
+                <h3 className="text-xl font-semibold mb-2 text-white">Drop your invoice here</h3>
                 <p className="text-slate-500">or click to browse files</p>
             </label>
         </div>
